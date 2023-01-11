@@ -10,6 +10,9 @@ import (
 	"syscall"
 )
 
+// build is the git version of this program. It is set using build flags in the makefile.
+var build = "develop"
+
 func main() {
 	// Construct the application logger.
 	log, err := logger.New("SALES-API")
@@ -30,7 +33,7 @@ func main() {
 }
 
 func run(log *zap.SugaredLogger) error {
-	log.Infow("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
+	log.Infow("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0), "build", build)
 
 	// Make a channel to listen for an interrupt or terminate signal from the OS.
 	// Use a buffered channel because the signal package required it.
