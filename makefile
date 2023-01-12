@@ -56,6 +56,12 @@ kind-status:
 	kubectl get svc -o wide
 	kubectl get pods -o wide --watch --all-namespaces
 
+kind-restart:
+	kubectl rollout restart deployment sales-pod
+
+kind-update: all kind-load kind-restart
+
+kind-update-apply: all kind-load kind-apply
 
 # ==============================================================================
 # Modules support

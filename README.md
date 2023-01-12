@@ -19,3 +19,15 @@ kubectl apply -f zarf/k8s/dashboard/k8s-dashboard-service-account.yaml
 kubectl apply -f zarf/k8s/dashboard/k8s-dashboard-cluster-role-binding.yaml
 kubectl -n kubernetes-dashboard create token admin-user
 ```
+
+
+**Kind Up&Running**
+
+```
+make kind-down
+make kind-up
+make kind-load
+(*) make kind-status-sales 
+make kind-apply
+(*) make kind-logs-sales 
+```
