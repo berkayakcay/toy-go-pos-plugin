@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"github.com/ardanlabs/conf/v3"
 	"github.com/berkayakcay/toy-pos-plugin/foundation/logger"
 	"go.uber.org/automaxprocs/maxprocs"
 	"go.uber.org/zap"
@@ -9,12 +11,14 @@ import (
 	"os/signal"
 	"runtime"
 	"syscall"
+	"time"
 )
 
 // build is the git version of this program. It is set using build flags in the makefile.
 var build = "develop"
 
 func main() {
+
 	// Construct the application logger.
 	log, err := logger.New("SALES-API")
 	if err != nil {
@@ -48,6 +52,36 @@ func run(log *zap.SugaredLogger) error {
 	}
 
 	log.Infow("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0), "build", build)
+
+	// =========================================================================
+	// Configuration
+
+	cfg := struct {
+		conf.Version
+		Web struct {
+			ReadTimeout     time.Duration `conf:"default:5s"`
+			WriteTimeout    time.Duration `conf:"default:10s"`
+			IdleTimeout     time.Duration `conf:"default:120s"`
+			ShutdownTimeout time.Duration `conf:"default:20s"`
+			APIHost         string        `conf:"default:0.0.0.0:3000"`
+			DebugHost       string        `conf:"default:0.0.0.0:4000"`
+		}
+	}{
+		Version: conf.Version{
+			Build: build,
+			Desc:  "copyright information here",
+		},
+	}
+
+	const prefix = "SALES"
+	help, err := conf.Parse(prefix, &cfg)
+	if err != nil {
+		if errors.Is(err, conf.ErrHelpWanted) {
+			fmt.Println(help)
+			return nil
+		}
+		return fmt.Errorf("parsing config: %w", err)
+	}
 
 	// Make a channel to listen for an interrupt or terminate signal from the OS.
 	// Use a buffered channel because the signal package required it.
