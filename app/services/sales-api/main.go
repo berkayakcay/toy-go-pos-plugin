@@ -3,15 +3,16 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/ardanlabs/conf/v3"
-	"github.com/berkayakcay/toy-pos-plugin/foundation/logger"
-	"go.uber.org/automaxprocs/maxprocs"
-	"go.uber.org/zap"
 	"os"
 	"os/signal"
 	"runtime"
 	"syscall"
 	"time"
+
+	"github.com/ardanlabs/conf/v3"
+	"github.com/berkayakcay/toy-pos-plugin/foundation/logger"
+	"go.uber.org/automaxprocs/maxprocs"
+	"go.uber.org/zap"
 )
 
 // build is the git version of this program. It is set using build flags in the makefile.
@@ -25,7 +26,6 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-
 	defer log.Sync()
 
 	// Perform the startup and shutdown sequence.
@@ -34,7 +34,6 @@ func main() {
 		log.Sync()
 		os.Exit(1)
 	}
-
 }
 
 func run(log *zap.SugaredLogger) error {
@@ -50,7 +49,6 @@ func run(log *zap.SugaredLogger) error {
 	if _, err := maxprocs.Set(opt); err != nil {
 		return fmt.Errorf("maxprocs: %w", err)
 	}
-
 	log.Infow("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0), "build", build)
 
 	// =========================================================================
@@ -83,13 +81,25 @@ func run(log *zap.SugaredLogger) error {
 		return fmt.Errorf("parsing config: %w", err)
 	}
 
+	// =========================================================================
+	// App Starting
+
+	log.Infow("starting service", "version", build)
+	defer log.Infow("shutdown complete")
+
+	out, err := conf.String(&cfg)
+	if err != nil {
+		return fmt.Errorf("generating config for output: %w", err)
+	}
+	log.Infow("startup", "config", out)
+
 	// Make a channel to listen for an interrupt or terminate signal from the OS.
-	// Use a buffered channel because the signal package required it.
+	// Use a buffered channel because the signal package requires it.
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
 	sig := <-shutdown
-	log.Infow("shutdown", "shutdown started", "signal", sig)
+	log.Infow("shutdown", "status", "shutdown started", "signal", sig)
 	defer log.Infow("shutdown", "status", "shutdown complete", "signal", sig)
 
 	return nil
