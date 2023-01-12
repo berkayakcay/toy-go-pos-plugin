@@ -35,6 +35,12 @@ kind-up:
 		--name $(KIND_CLUSTER) \
 		--config zarf/k8s/kind/kind-config.yaml
 
+kind-load:
+	kind load docker-image sales-api-amd64:$(VERSION) --name $(KIND_CLUSTER)
+
+kind-apply:
+	kustomize build zarf/k8s/kind/sales-pod | kubectl apply -f -
+
 kind-down:
 	kind delete cluster --name $(KIND_CLUSTER)
 
