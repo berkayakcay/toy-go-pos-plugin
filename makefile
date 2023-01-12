@@ -41,6 +41,12 @@ kind-load:
 kind-apply:
 	kustomize build zarf/k8s/kind/sales-pod | kubectl apply -f -
 
+kind-logs-sales:
+	kubectl logs -l app=sales --all-containers=true -f --tail=100
+
+kind-status-sales:
+	kubectl get pods -o wide --watch --namespace=sales-system
+
 kind-down:
 	kind delete cluster --name $(KIND_CLUSTER)
 

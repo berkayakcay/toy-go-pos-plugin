@@ -3,6 +3,7 @@ TOY POS PLUGIN
 
 
 **Colima Start**
+
 https://github.com/abiosoft/colima
 ```
 colima stop
@@ -10,6 +11,7 @@ colima start --cpu 4 --memory 8
 ```
 
 **K8S Dashboard**
+
 https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
 ```
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
