@@ -63,6 +63,9 @@ kind-update: all kind-load kind-restart
 
 kind-update-apply: all kind-load kind-apply
 
+kind-describe-deployment:
+	kubectl describe deployment sales-pod
+
 # ==============================================================================
 # Modules support
 
