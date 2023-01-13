@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/berkayakcay/toy-pos-plugin/foundation/web"
 	"net/http"
+	"time"
 
 	"go.uber.org/zap"
 )
@@ -14,13 +15,20 @@ func Logger(log *zap.SugaredLogger) web.Middleware {
 
 		f := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 
-			log.Infow("request started", "method", r.Method, "path", r.URL.Path,
+			// If the context is missing this value, request the service
+			// to be shutdown gracefully.
+			v, err := web.GetValues(ctx)
+			if err != nil {
+				return err // web.NewShutdownError("web value missing from context")
+			}
+
+			log.Infow("request started", "trace_id", v.TraceID, "method", r.Method, "path", r.URL.Path,
 				"remoteaddr", r.RemoteAddr)
 
-			err := h(ctx, w, r)
+			err = h(ctx, w, r)
 
-			log.Infow("request completed", "method", r.Method, "path", r.URL.Path,
-				"remoteaddr", r.RemoteAddr)
+			log.Infow("request completed", "trace_id", v.TraceID, "method", r.Method, "path", r.URL.Path,
+				"remoteaddr", r.RemoteAddr, "statuscode", v.StatusCode, "since", time.Since(v.Now))
 
 			return err
 		}

@@ -5,8 +5,10 @@ import (
 	"context"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/dimfeld/httptreemux/v5"
+	"github.com/google/uuid"
 )
 
 // A Handler is a type that handles a http request within our own little mini
@@ -43,9 +45,15 @@ func (a *App) Handle(method string, path string, handler Handler, mw ...Middlewa
 
 	h := func(w http.ResponseWriter, r *http.Request) {
 
-		// CODE BEFORE
+		// Set the context with the required values to
+		// process the request.
+		v := Values{
+			TraceID: uuid.NewString(),
+			Now:     time.Now().UTC(),
+		}
+		ctx := context.WithValue(r.Context(), key, &v)
 
-		if err := handler(r.Context(), w, r); err != nil {
+		if err := handler(ctx, w, r); err != nil {
 
 			// DON'T KNOW WHAT TO DO
 			return
