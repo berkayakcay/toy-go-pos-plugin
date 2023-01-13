@@ -13,8 +13,6 @@ type Handlers struct {
 }
 
 func (h Handlers) Liveness(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	h.Log.Infow("Liveness")
-
 	status := struct {
 		Status string
 	}{
@@ -24,8 +22,6 @@ func (h Handlers) Liveness(ctx context.Context, w http.ResponseWriter, r *http.R
 }
 
 func (h Handlers) Readiness(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	h.Log.Infow("Readiness")
-
 	status := struct {
 		Status string
 	}{
