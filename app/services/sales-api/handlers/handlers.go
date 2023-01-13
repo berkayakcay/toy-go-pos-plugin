@@ -4,6 +4,7 @@ package handlers
 import (
 	"expvar"
 	"github.com/berkayakcay/toy-pos-plugin/app/services/sales-api/handlers/probegrp"
+	"github.com/berkayakcay/toy-pos-plugin/business/web/v1/mid"
 	"github.com/berkayakcay/toy-pos-plugin/foundation/web"
 	"net/http"
 	"net/http/pprof"
@@ -20,7 +21,7 @@ type APIMuxConfig struct {
 
 // APIMux constructs a http.Handler with all application routes defined.
 func APIMux(cfg APIMuxConfig) *web.App {
-	app := web.NewApp(cfg.Shutdown)
+	app := web.NewApp(cfg.Shutdown, mid.Logger(cfg.Log))
 
 	probegrp := probegrp.Handlers{
 		Log: cfg.Log,
