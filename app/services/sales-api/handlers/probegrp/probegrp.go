@@ -1,6 +1,7 @@
 package probegrp
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -11,7 +12,7 @@ type Handlers struct {
 	Log *zap.SugaredLogger
 }
 
-func (h Handlers) Liveness(w http.ResponseWriter, r *http.Request) {
+func (h Handlers) Liveness(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	h.Log.Infow("Liveness")
 
 	status := struct {
@@ -19,10 +20,10 @@ func (h Handlers) Liveness(w http.ResponseWriter, r *http.Request) {
 	}{
 		Status: "OK",
 	}
-	json.NewEncoder(w).Encode(status)
+	return json.NewEncoder(w).Encode(status)
 }
 
-func (h Handlers) Readiness(w http.ResponseWriter, r *http.Request) {
+func (h Handlers) Readiness(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	h.Log.Infow("Readiness")
 
 	status := struct {
@@ -30,5 +31,5 @@ func (h Handlers) Readiness(w http.ResponseWriter, r *http.Request) {
 	}{
 		Status: "OK",
 	}
-	json.NewEncoder(w).Encode(status)
+	return json.NewEncoder(w).Encode(status)
 }

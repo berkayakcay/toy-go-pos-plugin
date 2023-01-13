@@ -4,11 +4,11 @@ package handlers
 import (
 	"expvar"
 	"github.com/berkayakcay/toy-pos-plugin/app/services/sales-api/handlers/probegrp"
+	"github.com/berkayakcay/toy-pos-plugin/foundation/web"
 	"net/http"
 	"net/http/pprof"
 	"os"
 
-	"github.com/dimfeld/httptreemux/v5"
 	"go.uber.org/zap"
 )
 
@@ -19,16 +19,16 @@ type APIMuxConfig struct {
 }
 
 // APIMux constructs a http.Handler with all application routes defined.
-func APIMux(cfg APIMuxConfig) *httptreemux.ContextMux {
-	mux := httptreemux.NewContextMux()
+func APIMux(cfg APIMuxConfig) *web.App {
+	app := web.NewApp(cfg.Shutdown)
 
 	probegrp := probegrp.Handlers{
 		Log: cfg.Log,
 	}
-	mux.Handle(http.MethodGet, "/liveness", probegrp.Liveness)
-	mux.Handle(http.MethodGet, "/readiness", probegrp.Readiness)
+	app.Handle(http.MethodGet, "/liveness", probegrp.Liveness)
+	app.Handle(http.MethodGet, "/readiness", probegrp.Readiness)
 
-	return mux
+	return app
 }
 
 // DebugStandardLibraryMux registers all the debug routes from the standard library
