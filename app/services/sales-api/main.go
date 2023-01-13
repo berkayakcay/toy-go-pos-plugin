@@ -1,9 +1,10 @@
 package main
 
 import (
+	"context"
 	"errors"
+	"expvar"
 	"fmt"
-	"github.com/berkayakcay/toy-pos-plugin/app/services/sales-api/handlers"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,10 +13,15 @@ import (
 	"time"
 
 	"github.com/ardanlabs/conf/v3"
+	"github.com/berkayakcay/toy-pos-plugin/app/services/sales-api/handlers"
 	"github.com/berkayakcay/toy-pos-plugin/foundation/logger"
 	"go.uber.org/automaxprocs/maxprocs"
 	"go.uber.org/zap"
 )
+
+/*
+	Figure out proper timeouts for 3000
+*/
 
 // build is the git version of this program. It is set using build flags in the makefile.
 var build = "develop"
@@ -95,8 +101,11 @@ func run(log *zap.SugaredLogger) error {
 	}
 	log.Infow("startup", "config", out)
 
+	expvar.NewString("build").Set(build)
+
 	// =========================================================================
 	// Start Debug Service
+
 	log.Infow("startup", "status", "debug v1 router started", "host", cfg.Web.DebugHost)
 
 	// The Debug function returns a mux to listen and serve on for all the debug
@@ -113,14 +122,58 @@ func run(log *zap.SugaredLogger) error {
 		}
 	}()
 
+	// =========================================================================
+	// Start API Service
+
+	log.Infow("startup", "status", "initializing V1 API support")
+
 	// Make a channel to listen for an interrupt or terminate signal from the OS.
 	// Use a buffered channel because the signal package requires it.
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
-	sig := <-shutdown
-	log.Infow("shutdown", "status", "shutdown started", "signal", sig)
-	defer log.Infow("shutdown", "status", "shutdown complete", "signal", sig)
+	// Construct a server to service the requests against the mux.
+	api := http.Server{
+		Addr:         cfg.Web.APIHost,
+		Handler:      nil,
+		ReadTimeout:  cfg.Web.ReadTimeout,
+		WriteTimeout: cfg.Web.WriteTimeout,
+		IdleTimeout:  cfg.Web.IdleTimeout,
+		ErrorLog:     zap.NewStdLog(log.Desugar()),
+	}
+
+	// Make a channel to listen for errors coming from the listener. Use a
+	// buffered channel so the goroutine can exit if we don't collect this error.
+	serverErrors := make(chan error, 1)
+
+	// Start the service listening for api requests.
+	go func() {
+		log.Infow("startup", "status", "api router started", "host", api.Addr)
+		serverErrors <- api.ListenAndServe()
+	}()
+
+	// =========================================================================
+	// Shutdown
+
+	// Blocking main and waiting for shutdown.
+	select {
+	case err := <-serverErrors:
+		return fmt.Errorf("server error: %w", err)
+
+	case sig := <-shutdown:
+		log.Infow("shutdown", "status", "shutdown started", "signal", sig)
+		defer log.Infow("shutdown", "status", "shutdown complete", "signal", sig)
+
+		// Give outstanding requests a deadline for completion.
+		ctx, cancel := context.WithTimeout(context.Background(), cfg.Web.ShutdownTimeout)
+		defer cancel()
+
+		// Asking listener to shut down and shed load.
+		if err := api.Shutdown(ctx); err != nil {
+			api.Close()
+			return fmt.Errorf("could not stop server gracefully: %w", err)
+		}
+	}
 
 	return nil
 }
