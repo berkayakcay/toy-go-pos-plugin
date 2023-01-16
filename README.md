@@ -31,3 +31,7 @@ make kind-load
 make kind-apply
 (*) make kind-logs-sales 
 ```
+
+**JWT**
+
+https://jwt.io/
