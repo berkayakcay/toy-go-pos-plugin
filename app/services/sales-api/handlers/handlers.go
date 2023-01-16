@@ -29,6 +29,9 @@ func APIMux(cfg APIMuxConfig) *web.App {
 	app.Handle(http.MethodGet, "/liveness", probegrp.Liveness)
 	app.Handle(http.MethodGet, "/readiness", probegrp.Readiness)
 
+	app.Handle(http.MethodGet, "/test400", probegrp.TestError400)
+	app.Handle(http.MethodGet, "/test500", probegrp.TestError500)
+
 	return app
 }
 
