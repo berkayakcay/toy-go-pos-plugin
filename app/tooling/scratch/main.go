@@ -83,6 +83,26 @@ func GenToken() interface{} {
 	fmt.Println("******************************")
 	fmt.Println(str)
 	fmt.Println("******************************")
+	fmt.Print("\n\n")
+
+	// =========================================================================
+
+	// Marshal the public key from the private key to PKIX.
+	asn1Bytes, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
+	if err != nil {
+		return fmt.Errorf("marshaling public key: %w", err)
+	}
+
+	// Construct a PEM block for the public key.
+	publicBlock := pem.Block{
+		Type:  "RSA PUBLIC KEY",
+		Bytes: asn1Bytes,
+	}
+
+	// Write the public key to the public key file.
+	if err := pem.Encode(os.Stdout, &publicBlock); err != nil {
+		return fmt.Errorf("encoding to public file: %w", err)
+	}
 
 	return nil
 }
