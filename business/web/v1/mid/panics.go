@@ -3,6 +3,7 @@ package mid
 import (
 	"context"
 	"fmt"
+	"github.com/berkayakcay/toy-pos-plugin/business/web/metrics"
 	"github.com/berkayakcay/toy-pos-plugin/foundation/web"
 	"net/http"
 	"runtime/debug"
@@ -19,6 +20,9 @@ func Panics() web.Middleware {
 					// Stack trace will be provided.
 					trace := debug.Stack()
 					err = fmt.Errorf("PANIC [%v] TRACE[%s]", rec, string(trace))
+
+					// Updates the metrics stored in the context.
+					metrics.AddPanics(ctx)
 				}
 			}()
 
