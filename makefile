@@ -12,6 +12,8 @@ SHELL := /bin/bash
 # openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
 # openssl rsa -pubout -in private.pem -out public.pem
 
+scratch:
+	go run app/tooling/scratch/main.go
 
 run:
 	go run app/services/sales-api/main.go | go run app/tooling/logfmt/main.go
