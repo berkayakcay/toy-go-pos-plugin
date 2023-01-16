@@ -45,6 +45,20 @@ func (h Handlers) TestError500(ctx context.Context, w http.ResponseWriter, r *ht
 	return web.Respond(ctx, w, status, http.StatusOK)
 }
 
+func (h Handlers) TestPanic(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	if n := rand.Intn(100); n%2 == 0 {
+		panic("testing panic")
+	}
+
+	status := struct {
+		Status string
+	}{
+		Status: "OK",
+	}
+
+	return web.Respond(ctx, w, status, http.StatusOK)
+}
+
 func (h Handlers) Liveness(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	host, err := os.Hostname()
 	if err != nil {
