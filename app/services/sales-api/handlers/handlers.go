@@ -17,6 +17,7 @@ import (
 type APIMuxConfig struct {
 	Shutdown chan os.Signal
 	Log      *zap.SugaredLogger
+	Build    string
 }
 
 // APIMux constructs a http.Handler with all application routes defined.
@@ -24,7 +25,8 @@ func APIMux(cfg APIMuxConfig) *web.App {
 	app := web.NewApp(cfg.Shutdown, mid.Logger(cfg.Log), mid.Errors(cfg.Log))
 
 	probegrp := probegrp.Handlers{
-		Log: cfg.Log,
+		Log:   cfg.Log,
+		Build: cfg.Build,
 	}
 	app.Handle(http.MethodGet, "/liveness", probegrp.Liveness)
 	app.Handle(http.MethodGet, "/readiness", probegrp.Readiness)
