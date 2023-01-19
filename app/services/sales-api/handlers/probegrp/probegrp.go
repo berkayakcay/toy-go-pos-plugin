@@ -3,18 +3,42 @@ package probegrp
 import (
 	"context"
 	"errors"
-	v1 "github.com/berkayakcay/toy-pos-plugin/business/web/v1"
-	"github.com/berkayakcay/toy-pos-plugin/foundation/web"
 	"math/rand"
 	"net/http"
 	"os"
 
+	v1 "github.com/berkayakcay/toy-pos-plugin/business/web/v1"
+	"github.com/berkayakcay/toy-pos-plugin/foundation/web"
 	"go.uber.org/zap"
 )
 
 type Handlers struct {
 	Log   *zap.SugaredLogger
 	Build string
+}
+
+func (h Handlers) TestAuth(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	status := struct {
+		Status string
+	}{
+		Status: "OK",
+	}
+
+	return web.Respond(ctx, w, status, http.StatusOK)
+}
+
+func (h Handlers) TestPanic(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	if n := rand.Intn(100); n%2 == 0 {
+		panic("testing panic")
+	}
+
+	status := struct {
+		Status string
+	}{
+		Status: "OK",
+	}
+
+	return web.Respond(ctx, w, status, http.StatusOK)
 }
 
 func (h Handlers) TestError400(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -34,20 +58,6 @@ func (h Handlers) TestError400(ctx context.Context, w http.ResponseWriter, r *ht
 func (h Handlers) TestError500(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	if n := rand.Intn(100); n%2 == 0 {
 		return errors.New("don't trust this")
-	}
-
-	status := struct {
-		Status string
-	}{
-		Status: "OK",
-	}
-
-	return web.Respond(ctx, w, status, http.StatusOK)
-}
-
-func (h Handlers) TestPanic(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	if n := rand.Intn(100); n%2 == 0 {
-		panic("testing panic")
 	}
 
 	status := struct {
@@ -94,5 +104,6 @@ func (h Handlers) Readiness(ctx context.Context, w http.ResponseWriter, r *http.
 	}{
 		Status: "OK",
 	}
+
 	return web.Respond(ctx, w, status, http.StatusOK)
 }

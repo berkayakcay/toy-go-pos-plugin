@@ -33,6 +33,9 @@ test500:
 testpanic:
 	curl -il http://localhost:3000/testpanic
 
+testauth:
+	curl -il http://localhost:3000/testauth
+
 # ==============================================================================
 # Building containers
 

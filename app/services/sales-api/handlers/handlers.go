@@ -4,6 +4,7 @@ package handlers
 import (
 	"expvar"
 	"github.com/berkayakcay/toy-pos-plugin/app/services/sales-api/handlers/probegrp"
+	"github.com/berkayakcay/toy-pos-plugin/business/web/auth"
 	"github.com/berkayakcay/toy-pos-plugin/business/web/v1/mid"
 	"github.com/berkayakcay/toy-pos-plugin/foundation/web"
 	"net/http"
@@ -18,11 +19,15 @@ type APIMuxConfig struct {
 	Shutdown chan os.Signal
 	Log      *zap.SugaredLogger
 	Build    string
+	Auth     *auth.Auth
 }
 
 // APIMux constructs a http.Handler with all application routes defined.
 func APIMux(cfg APIMuxConfig) *web.App {
 	app := web.NewApp(cfg.Shutdown, mid.Logger(cfg.Log), mid.Errors(cfg.Log), mid.Metrics(), mid.Panics())
+
+	authen := mid.Authenticate(cfg.Auth)
+	admin := mid.Authorize(auth.RoleUser)
 
 	probegrp := probegrp.Handlers{
 		Log:   cfg.Log,
@@ -34,6 +39,8 @@ func APIMux(cfg APIMuxConfig) *web.App {
 	app.Handle(http.MethodGet, "/test400", probegrp.TestError400)
 	app.Handle(http.MethodGet, "/test500", probegrp.TestError500)
 	app.Handle(http.MethodGet, "/testpanic", probegrp.TestPanic)
+
+	app.Handle(http.MethodGet, "/testauth", probegrp.TestAuth, authen, admin)
 
 	return app
 }
