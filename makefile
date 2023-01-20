@@ -11,6 +11,10 @@ SHELL := /bin/bash
 # To generate a private/public key PEM file.
 # openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
 # openssl rsa -pubout -in private.pem -out public.pem
+#
+# Running pgcli client for database.
+# brew install pgcli
+# pgcli postgresql://postgres:postgres@localhost
 
 scratch:
 	go run app/tooling/scratch/main.go
