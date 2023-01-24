@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	//go:embed ../sql/schema.sql
+	//go:embed sql/schema.sql
 	schemaDoc string
 
 	//go:embed sql/seed.sql

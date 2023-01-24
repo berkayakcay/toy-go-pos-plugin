@@ -7,6 +7,7 @@ import (
 	"github.com/berkayakcay/toy-pos-plugin/business/web/auth"
 	"github.com/berkayakcay/toy-pos-plugin/business/web/v1/mid"
 	"github.com/berkayakcay/toy-pos-plugin/foundation/web"
+	"github.com/jmoiron/sqlx"
 	"net/http"
 	"net/http/pprof"
 	"os"
@@ -20,6 +21,7 @@ type APIMuxConfig struct {
 	Log      *zap.SugaredLogger
 	Build    string
 	Auth     *auth.Auth
+	DB       *sqlx.DB
 }
 
 // APIMux constructs a http.Handler with all application routes defined.
@@ -32,6 +34,7 @@ func APIMux(cfg APIMuxConfig) *web.App {
 	probegrp := probegrp.Handlers{
 		Log:   cfg.Log,
 		Build: cfg.Build,
+		DB:    cfg.DB,
 	}
 	app.Handle(http.MethodGet, "/liveness", probegrp.Liveness)
 	app.Handle(http.MethodGet, "/readiness", probegrp.Readiness)
