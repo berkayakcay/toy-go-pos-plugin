@@ -1,5 +1,5 @@
 // Package dbschema contains the database schema, migrations and seeding data.
-package data
+package dbschema
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	//go:embed sql/schema.sql
+	//go:embed ../sql/schema.sql
 	schemaDoc string
 
 	//go:embed sql/seed.sql
